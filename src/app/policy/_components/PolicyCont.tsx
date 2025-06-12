@@ -17,29 +17,28 @@ type SearchFilters = {
 };
 
 const PolicyCont = () => {
-  const [shouldFetch, setShouldFetch] = useState(false);
-  const [isRefetching, setIsRefetching] = useState(false);
   const [filters, setFilters] = useState<SearchFilters>({
-    region: "지역 선택",
-    field: "정책 분야 선택",
+    region: "서울특별시",
+    field: "주거",
   });
+  const [loading, setLoading] = useState(false);
 
   const {
     data: policyData,
-    isLoading,
+    isPending,
     error,
     refetch,
-  } = useQuery<PolicyData[]>({
+  } = useQuery<PolicyData["result"]["youthPolicyList"]>({
     queryKey: ["policies"],
     queryFn: async () => {
       const regionCode = REGION_CODES[filters.region];
-      const response = await fetchPolicyList({
-        bizTycdSel: filters.field,
-        srchPolyBizSecd: regionCode,
+      const response: PolicyData = await fetchPolicyList({
+        zipCd: regionCode,
+        lclsfNm: filters.field,
+        pageSize: "1000",
       });
-      return response as PolicyData[];
+      return response.result.youthPolicyList;
     },
-    enabled: shouldFetch && !!filters.region && !!filters.field,
   });
 
   const {
@@ -51,10 +50,13 @@ const PolicyCont = () => {
     nextPage,
     prevPage,
     goToPage,
-  } = usePagination<PolicyData>(policyData || [], 6);
+  } = usePagination<PolicyData["result"]["youthPolicyList"][0]>(
+    policyData || [],
+    6,
+  );
 
   const handleFilterChange = (
-    key: keyof Omit<SearchFilters, "pageIndex">,
+    key: keyof Omit<SearchFilters, "pageNum">,
     value: string,
   ) => {
     setFilters((prev) => ({
@@ -64,10 +66,9 @@ const PolicyCont = () => {
   };
 
   const handleSearch = async () => {
-    setIsRefetching(true);
-    setShouldFetch(true);
+    setLoading(true);
     await refetch();
-    setIsRefetching(false);
+    setLoading(false);
   };
 
   return (
@@ -79,18 +80,11 @@ const PolicyCont = () => {
         onFieldChange={(field) => handleFilterChange("field", field)}
         onSearch={handleSearch}
       />
-      {isLoading || isRefetching ? (
+      {isPending || loading ? (
         <Loading />
       ) : (
         <>
-          <p className="mb-4 mt-5 break-keep text-sm text-base-800 [text-rendering:optimizeLegibility]">
-            현재 청년 정책 정보를 제공하는 API가 사정상 2월까지 일시적으로
-            중단됩니다. <br />
-            이용에 불편을 드려 죄송하며, 빠르게 복구하도록 노력하겠습니다.
-          </p>
-
-          {/* TODO */}
-          <div className="hidden">
+          <div>
             <PolicyResult error={error} policyData={currentPolicyData} />
             {policyData && policyData.length > 0 && (
               <Pagination
