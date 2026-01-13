@@ -63,7 +63,7 @@ export const fetchOpenAiDay = async (
           .map((part) => part.trim());
         return wasteName && wasteDay ? { [wasteName]: wasteDay } : null;
       })
-      .filter((item) => item !== null);
+      .filter((item): item is WasteSchedule => item !== null);
   } catch (error) {
     console.error(error);
     throw new Error("쓰레기 배출 정보를 가져오는데 실패했습니다.");

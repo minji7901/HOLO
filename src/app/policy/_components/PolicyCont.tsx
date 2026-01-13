@@ -29,7 +29,7 @@ const PolicyCont = () => {
     error,
     refetch,
   } = useQuery<PolicyData["result"]["youthPolicyList"]>({
-    queryKey: ["policies"],
+    queryKey: ["policies", filters.region, filters.field],
     queryFn: async () => {
       const regionCode = REGION_CODES[filters.region];
       const response: PolicyData = await fetchPolicyList({
