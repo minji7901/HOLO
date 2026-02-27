@@ -1,7 +1,9 @@
 # 🍊HOLO🍊
 
 ### 1인가구를 위한 정보 제공 서비스, 나 HOLO 산다!
-배포 링크: [https://holo-psi.vercel.app/](https://holo-psi.vercel.app/)
+배포 링크: https://holo-l6cwwsb5d-minji7901s-projects.vercel.app/policy
+*현재 무료 플랜이 종료되어,
+Supabase API를 사용하는 홈 화면은 접속이 불가한 상태입니다.
 
 <br />
 
