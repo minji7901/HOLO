@@ -5,7 +5,7 @@ type FetchPolicyParams = {
 };
 
 export const fetchPolicyApi = async ({ queryParams }: FetchPolicyParams) => {
-  const API_URL = process.env.NEXT_PUBLIC_POLICY_API_URL;
+  const API_URL = process.env.POLICY_API_URL;
   const SERVICE_KEY = process.env.POLICY_API_KEY;
 
   if (!API_URL || !SERVICE_KEY) {

@@ -21,24 +21,29 @@ const PolicyCont = () => {
     region: "서울특별시",
     field: "주거",
   });
-  const [loading, setLoading] = useState(false);
+
+  const [appliedFilters, setAppliedFilters] = useState<SearchFilters>({
+    region: "서울특별시",
+    field: "주거",
+  });
 
   const {
     data: policyData,
-    isPending,
+    isFetching,
     error,
     refetch,
   } = useQuery<PolicyData["result"]["youthPolicyList"]>({
-    queryKey: ["policies"],
+    queryKey: ["policies", appliedFilters.region, appliedFilters.field],
     queryFn: async () => {
-      const regionCode = REGION_CODES[filters.region];
+      const regionCode = REGION_CODES[appliedFilters.region];
       const response: PolicyData = await fetchPolicyList({
         zipCd: regionCode,
-        lclsfNm: filters.field,
+        lclsfNm: appliedFilters.field,
         pageSize: "1000",
       });
       return response.result.youthPolicyList;
     },
+    enabled: false,
   });
 
   const {
@@ -55,21 +60,27 @@ const PolicyCont = () => {
     6,
   );
 
-  const handleFilterChange = (
-    key: keyof Omit<SearchFilters, "pageNum">,
-    value: string,
-  ) => {
+  const handleFilterChange = (key: keyof SearchFilters, value: string) => {
     setFilters((prev) => ({
       ...prev,
       [key]: value,
     }));
   };
 
-  const handleSearch = async () => {
-    setLoading(true);
-    await refetch();
-    setLoading(false);
-  };
+ const handleSearch = async () => {
+   if (
+     appliedFilters.region === filters.region &&
+     appliedFilters.field === filters.field
+   ) {
+     return;
+   }
+
+   setAppliedFilters(filters);
+
+   setTimeout(() => {
+     refetch();
+   }, 0);
+ };
 
   return (
     <div>
@@ -80,25 +91,24 @@ const PolicyCont = () => {
         onFieldChange={(field) => handleFilterChange("field", field)}
         onSearch={handleSearch}
       />
-      {isPending || loading ? (
+
+      {isFetching ? (
         <Loading />
       ) : (
-        <>
-          <div>
-            <PolicyResult error={error} policyData={currentPolicyData} />
-            {policyData && policyData.length > 0 && (
-              <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                startButtonIndex={startButtonIndex}
-                maxButtonsToShow={maxButtonsToShow}
-                onNextPage={nextPage}
-                onPrevPage={prevPage}
-                onGoToPage={goToPage}
-              />
-            )}
-          </div>
-        </>
+        <div>
+          <PolicyResult error={error} policyData={currentPolicyData} />
+          {policyData && policyData.length > 0 && (
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              startButtonIndex={startButtonIndex}
+              maxButtonsToShow={maxButtonsToShow}
+              onNextPage={nextPage}
+              onPrevPage={prevPage}
+              onGoToPage={goToPage}
+            />
+          )}
+        </div>
       )}
     </div>
   );
