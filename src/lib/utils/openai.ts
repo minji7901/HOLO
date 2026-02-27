@@ -14,19 +14,20 @@ const openai = new OpenAI({
 export const fetchOpenAIResponse = async (
   prompt: string,
   errorMessage: string,
-): Promise<string | null> => {
+): Promise<string> => {
   try {
     const completion = await openai.chat.completions.create({
       ...OPENAI_CONFIG,
-      messages: [
-        {
-          role: "user",
-          content: prompt,
-        },
-      ],
+      messages: [{ role: "user", content: prompt }],
     });
 
-    return completion.choices[0].message.content || null;
+    const content = completion.choices?.[0]?.message?.content?.trim();
+
+    if (!content) {
+      throw new Error("Empty OpenAI response");
+    }
+
+    return content;
   } catch (error) {
     console.error(error);
     throw new Error(errorMessage);
